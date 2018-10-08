@@ -15,7 +15,9 @@ namespace instabot
 {
     public class Bot : IDisposable
     {
+        private const int MaxRequestCount = 200;
         private const int DelayForWaitCount = 5;
+
         private static UserSessionData user;
         private static IInstaApi api;
 
@@ -103,6 +105,11 @@ namespace instabot
             int privateUserCount = userShortList.Value.FindAll(u => u.IsPrivate).Count;
             Console.WriteLine(String.Format("Private User Count : {0}", privateUserCount));
             int wait = DelayForWaitCount;
+            if (privateUserCount > MaxRequestCount)
+            {
+                privateUserCount = MaxRequestCount;
+            }
+
             foreach (var user in userShortList.Value)
             {
 
@@ -121,7 +128,10 @@ namespace instabot
                     }
 
                     Console.WriteLine(String.Format("Requested User : {0}, Remaining Count: {1}", user.FullName, privateUserCount));
-
+                    if (privateUserCount == 0)
+                    {
+                        break;
+                    }
 
                 }
             }
