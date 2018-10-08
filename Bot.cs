@@ -48,12 +48,12 @@ namespace instabot
             }
         }
 
-        public async void Logout()
+        public async Task Logout()
         {
             await api.LogoutAsync();
         }
 
-        public async void PullUserPosts(string userName)
+        public async Task PullUserPosts(string userName)
         {
             IResult<InstaUser> userInfo = await api.GetUserAsync(userName);
             Console.WriteLine(userInfo.Value.FullName);
@@ -84,7 +84,7 @@ namespace instabot
 
         }
 
-        public async void PullUserInfo(string userName)
+        public async Task PullUserInfo(string userName)
         {
             IResult<InstaUser> userInfo = await api.GetUserAsync(userName);
             writeAllProperties(userInfo);
@@ -97,7 +97,7 @@ namespace instabot
             return userShortList;
         }
 
-        public async void MakeFollowRequestToPrivateAccount(string userName)
+        public async Task MakeFollowRequestToPrivateAccount(string userName)
         {
             IResult<InstaUserShortList> userShortList = await PullUsersFollowers(userName);
             int privateUserCount = userShortList.Value.FindAll(u => u.IsPrivate).Count;
