@@ -13,172 +13,41 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ConsoleApp2
+namespace instabot
 {
-    class Program
+    public class Program
     {
-        private const int DelayForWaitCount = 5;    
 
+        #region Privates
         private static string userName = "";
         private static string password = "";
-
-        private static UserSessionData user;
-        private static IInstaApi api;
+        #endregion Privates
 
         static void Main(string[] args)
         {
+            getUserInfo();
 
+            Console.Write("Whose followers: ");
+            string who = Console.ReadLine();
+
+            Bot bot = new Bot(userName, password);
+            bot.MakeFollowRequestToPrivateAccount(who);
+
+            Console.Read();
+        }
+
+        private static void getUserInfo()
+        {
             Console.Write("UserName : ");
             userName = Console.ReadLine();
 
             Console.Write("Password : ");
-            password = ReadPassword();
+            password = readPassword();
             Console.WriteLine("\n--------------");
 
-            user = new UserSessionData();
-            user.UserName = userName;
-            user.Password = password;
-
-            Login();
-            Console.Read();
         }
 
-        private static async Task Login()
-        {
-            api = InstaApiBuilder.CreateBuilder()
-                .SetUser(user)
-                .UseLogger(new DebugLogger(LogLevel.Exceptions))
-                .SetRequestDelay(RequestDelay.FromSeconds(3, 5))
-                .Build();
-
-            var loginRequest = await api.LoginAsync();
-            if (loginRequest.Succeeded)
-            {
-                Console.WriteLine("Success");
-            }
-            else
-            {
-                Console.WriteLine(loginRequest.Info.Message);
-            }
-        }
-
-        public static async void Logout()
-        {
-            await api.LogoutAsync();
-        }
-
-        public static async void PullUserPosts(string userName)
-        {
-            IResult<InstaUser> userInfo = await api.GetUserAsync(userName);
-            Console.WriteLine(userInfo.Value.FullName);
-            Console.WriteLine(userInfo.Value.IsPrivate);
-            Console.WriteLine(userInfo.Value.FollowersCount);
-            Console.WriteLine(userInfo.Value.FriendshipStatus.ToString());
-            Console.WriteLine(userInfo.Value.SocialContext);
-            Console.WriteLine(userInfo.Value.UnseenCount);
-            
-            IResult<InstaMediaList> media = await api.GetUserMediaAsync(userName, PaginationParameters.MaxPagesToLoad(5));
-            InstaMediaList mediaList = media.Value;
-
-            for (int i = 0; i < mediaList.Count; i++)
-            {
-                InstaMedia m = mediaList[i];
-                if(m != null && m.Caption != null && !String.IsNullOrEmpty(m.Caption.Text) && m.MediaType == InstaMediaType.Image)
-                {
-                    for (int x = 0; x < m.Images.Count; x++)
-                    {
-                        if(m.Images[x] != null && m.Images[x].URI != null)
-                        {
-                            Console.WriteLine(m.Caption.Text);
-                            Console.WriteLine(m.Images[x].URI);
-                        }
-                    }
-                }
-            }
-
-        }
-
-        public static async void PullUserInfo(string userName)
-        {
-            await Login();
-
-            IResult<InstaUser> userInfo = await api.GetUserAsync(userName);
-            WriteAllProperties(userInfo);
-            
-        }
-
-        public static async Task<IResult<InstaUserShortList>> PullUsersFollowers(string userName)
-        {
-            await Login();
-
-            IResult<InstaUserShortList> userShortList = await api.GetUserFollowersAsync(userName, PaginationParameters.Empty);
-            
-            return userShortList;
-        }
-
-        public static async void MakeFollowRequestToPrivateAccount(string userName)
-        {
-            IResult<InstaUserShortList> userShortList = await PullUsersFollowers(userName);
-            int privateUserCount = userShortList.Value.FindAll(u => u.IsPrivate).Count;
-            Console.WriteLine(String.Format("Private User Count : {0}", privateUserCount));
-            int wait = DelayForWaitCount;
-            foreach (var user in userShortList.Value)
-            {
-
-                if (user.IsPrivate)
-                {
-                    wait--;
-                    privateUserCount--;
-                    if (wait == 0)
-                    {
-                        wait = DelayForWaitCount;
-                        await api.FollowUserAsync(user.Pk);
-                    }
-                    else
-                    {
-                        api.FollowUserAsync(user.Pk);
-                    }
-                    
-                    Console.WriteLine(String.Format("Requested User : {0}, Remaining Count: {1}", user.FullName, privateUserCount));
-                    
-                    
-                }
-            }
-            
-        }
-
-        public static async Task FollowUser(long userId)
-        {
-            await api.FollowUserAsync(userId);
-        }
-
-        public static void WaitForLogin()
-        {
-            int timeout = 30; // second
-            while (!api.IsUserAuthenticated)
-            {
-                timeout--;
-                if (timeout < 0)
-                {
-                    throw new TimeoutException("Login timeout");
-                }
-                
-                Thread.Sleep(1000);
-            }
-        }
-
-        public static void WriteAllProperties(object obj)
-        {
-            string sObj = JsonConvert.SerializeObject(obj);
-            JObject parsed = JObject.Parse(sObj);
-            foreach (var pair in parsed)
-            {
-                Console.WriteLine("{0}: {1}", pair.Key, pair.Value);
-            }
-
-        }
-
-        public static string ReadPassword()
+        private static string readPassword()
         {
             string pass = "";
             do
