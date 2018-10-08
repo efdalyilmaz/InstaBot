@@ -27,17 +27,20 @@ namespace instabot
             user.UserName = userName;
             user.Password = password;
 
+            api = InstaApiBuilder.CreateBuilder()
+                                .SetUser(user)
+                                .UseLogger(new DebugLogger(LogLevel.Exceptions))
+                                .SetRequestDelay(RequestDelay.FromSeconds(3, 5))
+                                .Build();
+
+
             Task login = Login();
             Task.WaitAny(login);
         }
 
         public async Task Login()
         {
-            api = InstaApiBuilder.CreateBuilder()
-                .SetUser(user)
-                .UseLogger(new DebugLogger(LogLevel.Exceptions))
-                .SetRequestDelay(RequestDelay.FromSeconds(3, 5))
-                .Build();
+
 
             var loginRequest = await api.LoginAsync();
             if (loginRequest.Succeeded)
