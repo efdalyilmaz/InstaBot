@@ -121,8 +121,7 @@ namespace instabot
             {
                 userShortList = await PullUsersFollowing(userName);
             }
-
-            await PullUsersFollowers(userName);
+            
             int privateUserCount = userShortList.Value.FindAll(u => u.IsPrivate).Count;
             Console.WriteLine(String.Format("Private User Count : {0}", privateUserCount));
             int wait = DelayForWaitCount;
