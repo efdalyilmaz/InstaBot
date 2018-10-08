@@ -28,10 +28,10 @@ namespace instabot
             getUserInfo();
 
             Console.Write("Whose followers: ");
-            string who = Console.ReadLine();
+            string whosefollowers = Console.ReadLine();
 
             Bot bot = new Bot(userName, password);
-            bot.MakeFollowRequestToPrivateAccount(who);
+            bot.MakeFollowRequestToPrivateAccount(whosefollowers);
 
             Console.Read();
         }
