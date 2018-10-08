@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace instabot
         private const int DelayForWaitCount = 5;
 
         private static UserSessionData user;
-        private static IInstaApi api;
+        private static IInstaApi _instaApi;
 
         public Bot(string userName, string password)
         {
@@ -27,7 +28,7 @@ namespace instabot
             user.UserName = userName;
             user.Password = password;
 
-            api = InstaApiBuilder.CreateBuilder()
+            _instaApi = InstaApiBuilder.CreateBuilder()
                                 .SetUser(user)
                                 .UseLogger(new DebugLogger(LogLevel.Exceptions))
                                 .SetRequestDelay(RequestDelay.FromSeconds(3, 5))
@@ -42,7 +43,7 @@ namespace instabot
         {
 
 
-            var loginRequest = await api.LoginAsync();
+            var loginRequest = await _instaApi.LoginAsync();
             if (loginRequest.Succeeded)
             {
                 Console.WriteLine("Success");
@@ -55,12 +56,12 @@ namespace instabot
 
         public async Task Logout()
         {
-            await api.LogoutAsync();
+            await _instaApi.LogoutAsync();
         }
 
         public async Task PullUserPosts(string userName)
         {
-            IResult<InstaUser> userInfo = await api.GetUserAsync(userName);
+            IResult<InstaUser> userInfo = await _instaApi.GetUserAsync(userName);
             Console.WriteLine(userInfo.Value.FullName);
             Console.WriteLine(userInfo.Value.IsPrivate);
             Console.WriteLine(userInfo.Value.FollowersCount);
@@ -68,7 +69,7 @@ namespace instabot
             Console.WriteLine(userInfo.Value.SocialContext);
             Console.WriteLine(userInfo.Value.UnseenCount);
 
-            IResult<InstaMediaList> media = await api.GetUserMediaAsync(userName, PaginationParameters.MaxPagesToLoad(5));
+            IResult<InstaMediaList> media = await _instaApi.GetUserMediaAsync(userName, PaginationParameters.MaxPagesToLoad(5));
             InstaMediaList mediaList = media.Value;
 
             for (int i = 0; i < mediaList.Count; i++)
@@ -91,13 +92,13 @@ namespace instabot
 
         public async Task PullUserInfo(string userName)
         {
-            IResult<InstaUser> userInfo = await api.GetUserAsync(userName);
+            IResult<InstaUser> userInfo = await _instaApi.GetUserAsync(userName);
             writeAllProperties(userInfo);
         }
 
         public async Task<IResult<InstaUserShortList>> PullUsersFollowers(string userName)
         {
-            IResult<InstaUserShortList> userShortList = await api.GetUserFollowersAsync(userName, PaginationParameters.Empty);
+            IResult<InstaUserShortList> userShortList = await _instaApi.GetUserFollowersAsync(userName, PaginationParameters.Empty);
 
             return userShortList;
         }
@@ -123,11 +124,11 @@ namespace instabot
                     if (wait == 0)
                     {
                         wait = DelayForWaitCount;
-                        await api.FollowUserAsync(user.Pk);
+                        await _instaApi.FollowUserAsync(user.Pk);
                     }
                     else
                     {
-                        api.FollowUserAsync(user.Pk);
+                        _instaApi.FollowUserAsync(user.Pk);
                     }
 
                     Console.WriteLine(String.Format("Requested User : {0}, Remaining Count: {1}", user.FullName, privateUserCount));
@@ -143,13 +144,28 @@ namespace instabot
 
         public async Task FollowUser(long userId)
         {
-            await api.FollowUserAsync(userId);
+            await _instaApi.FollowUserAsync(userId);
+        }
+
+        public async Task UploadPhotoAsync(string fullpath, string caption)
+        {
+            var mediaImage = new InstaImage
+            {
+                Height = 1080,
+                Width = 1080,
+                URI = new Uri(Path.GetFullPath(fullpath), UriKind.Absolute).LocalPath
+            };
+
+            var result = await _instaApi.UploadPhotoAsync(mediaImage, caption);
+            Console.WriteLine(result.Succeeded
+                ? $"Media created: {result.Value.Pk}, {result.Value.Caption}"
+                : $"Unable to upload photo: {result.Info.Message}");
         }
 
         private void waitForLogin()
         {
             int timeout = 30; // second
-            while (!api.IsUserAuthenticated)
+            while (!_instaApi.IsUserAuthenticated)
             {
                 timeout--;
                 if (timeout < 0)
