@@ -16,7 +16,7 @@ namespace instabot
 {
     public class Bot : IDisposable
     {
-        private const int MaxRequestCount = 200;
+        private const int MaxRequestCount = 500;
         private const int DelayForWaitCount = 5;
 
         private static UserSessionData user;
@@ -103,9 +103,26 @@ namespace instabot
             return userShortList;
         }
 
-        public async Task MakeFollowRequestToPrivateAccount(string userName)
+        public async Task<IResult<InstaUserShortList>> PullUsersFollowing(string userName)
         {
-            IResult<InstaUserShortList> userShortList = await PullUsersFollowers(userName);
+            IResult<InstaUserShortList> userShortList = await _instaApi.GetUserFollowingAsync(userName, PaginationParameters.Empty);
+
+            return userShortList;
+        }
+
+        public async Task MakeFollowRequestToPrivateAccount(string userName, bool toFollowers) 
+        {
+            IResult<InstaUserShortList> userShortList;
+            if (toFollowers)
+            {
+                userShortList = await PullUsersFollowers(userName);
+            }
+            else
+            {
+                userShortList = await PullUsersFollowing(userName);
+            }
+
+            await PullUsersFollowers(userName);
             int privateUserCount = userShortList.Value.FindAll(u => u.IsPrivate).Count;
             Console.WriteLine(String.Format("Private User Count : {0}", privateUserCount));
             int wait = DelayForWaitCount;
