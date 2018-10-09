@@ -17,7 +17,7 @@ namespace instabot
 {
     public class Bot : IDisposable
     {
-        private const int MaxRequestCount = 100;
+        private const int MaxRequestCount = 500;
         private const int DelayForWaitCount = 5;
         private const string FILE_REQUESTED = @"C:\Data\requested.txt";
 
@@ -100,14 +100,14 @@ namespace instabot
 
         public async Task<IResult<InstaUserShortList>> PullUsersFollowers(string userName)
         {
-            IResult<InstaUserShortList> userShortList = await _instaApi.GetUserFollowersAsync(userName, PaginationParameters.MaxPagesToLoad(10));
+            IResult<InstaUserShortList> userShortList = await _instaApi.GetUserFollowersAsync(userName, PaginationParameters.Empty);
 
             return userShortList;
         }
 
         public async Task<IResult<InstaUserShortList>> PullUsersFollowing(string userName)
         {
-            IResult<InstaUserShortList> userShortList = await _instaApi.GetUserFollowingAsync(userName, PaginationParameters.MaxPagesToLoad(10));
+            IResult<InstaUserShortList> userShortList = await _instaApi.GetUserFollowingAsync(userName, PaginationParameters.Empty);
 
             return userShortList;
         }
@@ -155,7 +155,7 @@ namespace instabot
                     _instaApi.FollowUserAsync(user.Pk);
                 }
 
-                Console.WriteLine(String.Format("Requested User : {0}, Remaining Count: {1}", user.FullName, requestCount));
+                Console.WriteLine(String.Format("Requested User : {0}, Remaining Count: {1}", user.UserName, requestCount));
 
             }
 
