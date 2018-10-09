@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,8 +17,9 @@ namespace instabot
 {
     public class Bot : IDisposable
     {
-        private const int MaxRequestCount = 500;
+        private const int MaxRequestCount = 100;
         private const int DelayForWaitCount = 5;
+        private const string FILE_REQUESTED = @"C:\Data\requested.txt";
 
         private static UserSessionData user;
         private static IInstaApi _instaApi;
@@ -98,19 +100,19 @@ namespace instabot
 
         public async Task<IResult<InstaUserShortList>> PullUsersFollowers(string userName)
         {
-            IResult<InstaUserShortList> userShortList = await _instaApi.GetUserFollowersAsync(userName, PaginationParameters.Empty);
+            IResult<InstaUserShortList> userShortList = await _instaApi.GetUserFollowersAsync(userName, PaginationParameters.MaxPagesToLoad(10));
 
             return userShortList;
         }
 
         public async Task<IResult<InstaUserShortList>> PullUsersFollowing(string userName)
         {
-            IResult<InstaUserShortList> userShortList = await _instaApi.GetUserFollowingAsync(userName, PaginationParameters.Empty);
+            IResult<InstaUserShortList> userShortList = await _instaApi.GetUserFollowingAsync(userName, PaginationParameters.MaxPagesToLoad(10));
 
             return userShortList;
         }
 
-        public async Task MakeFollowRequestToPrivateAccount(string userName, bool toFollowers) 
+        public async Task MakeFollowRequestToPrivateAccount(string userName, bool toFollowers)
         {
             IResult<InstaUserShortList> userShortList;
             if (toFollowers)
@@ -121,39 +123,40 @@ namespace instabot
             {
                 userShortList = await PullUsersFollowing(userName);
             }
+
+            List<InstaUserShort> privateUserList = userShortList.Value.FindAll(u => u.IsPrivate && u.ProfilePictureId != "unknown");
+            List<long> requestedUser = readRequestedListFromFile();
+            Console.WriteLine(String.Format("Firstly, Private User Count : {0}", privateUserList.Count));
+
+            privateUserList.RemoveAll(item => requestedUser.Contains(item.Pk));
             
-            int privateUserCount = userShortList.Value.FindAll(u => u.IsPrivate).Count;
-            Console.WriteLine(String.Format("Private User Count : {0}", privateUserCount));
-            int wait = DelayForWaitCount;
-            if (privateUserCount > MaxRequestCount)
+            if (privateUserList.Count > MaxRequestCount)
             {
-                privateUserCount = MaxRequestCount;
+                privateUserList = privateUserList.Take(MaxRequestCount).ToList();
             }
 
-            foreach (var user in userShortList.Value)
+            Console.WriteLine(String.Format("Finally, Private User Count : {0}", privateUserList.Count));
+
+            writeAllToRequestedFile(privateUserList);
+
+            int wait = DelayForWaitCount;
+            int requestCount = privateUserList.Count;
+            foreach (var user in privateUserList)
             {
-
-                if (user.IsPrivate)
+                wait--;
+                requestCount --;
+                if (wait == 0)
                 {
-                    wait--;
-                    privateUserCount--;
-                    if (wait == 0)
-                    {
-                        wait = DelayForWaitCount;
-                        await _instaApi.FollowUserAsync(user.Pk);
-                    }
-                    else
-                    {
-                        _instaApi.FollowUserAsync(user.Pk);
-                    }
-
-                    Console.WriteLine(String.Format("Requested User : {0}, Remaining Count: {1}", user.FullName, privateUserCount));
-                    if (privateUserCount == 0)
-                    {
-                        break;
-                    }
-
+                    wait = DelayForWaitCount;
+                    await _instaApi.FollowUserAsync(user.Pk);
                 }
+                else
+                {
+                    _instaApi.FollowUserAsync(user.Pk);
+                }
+
+                Console.WriteLine(String.Format("Requested User : {0}, Remaining Count: {1}", user.FullName, requestCount));
+
             }
 
         }
@@ -202,6 +205,51 @@ namespace instabot
                 Console.WriteLine("{0}: {1}", pair.Key, pair.Value);
             }
 
+        }
+
+        private void writeAllToRequestedFile(List<InstaUserShort> privateUserList)
+        {
+            try
+            {
+                if (!File.Exists(FILE_REQUESTED))
+                {
+                    File.Create(FILE_REQUESTED);
+                }
+
+                using (StreamWriter w = File.AppendText(FILE_REQUESTED))
+                {
+                    foreach (var item in privateUserList)
+                    {
+                        w.WriteLine(item.Pk.ToString());
+                    }
+                   
+                }
+            }
+            catch (Exception ex)
+            {
+               
+            }
+        }
+
+        private List<long> readRequestedListFromFile()
+        {
+            List<long> requestedUser = new List<long>();
+            try
+            {
+                if (!File.Exists(FILE_REQUESTED))
+                {
+                    return requestedUser;
+                }
+
+                string[] lines = File.ReadAllLines(FILE_REQUESTED);
+                requestedUser = lines.Select(Int64.Parse).ToList();
+
+                return requestedUser;
+            }
+            catch (Exception ex)
+            {
+                return requestedUser;
+            }
         }
 
         public void Dispose()
