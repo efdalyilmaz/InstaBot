@@ -27,12 +27,14 @@ namespace instabot
         {
             getUserInfo();
 
-
+            Console.Write("WhoseFollowers : ");
+            string whoseFollowers = Console.ReadLine();
             using (Bot bot = new Bot(userName, password))
             {
-                Task.WaitAny(bot.UploadPhotoAsync(String.Empty, String.Empty));
+                Task.WaitAny(bot.MakeFollowRequestToPrivateAccount(whoseFollowers, true);
             }
 
+            Console.WriteLine("Finished");
             Console.Read();
         }
 
