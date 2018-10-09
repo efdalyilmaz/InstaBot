@@ -125,16 +125,17 @@ namespace instabot
             }
 
             List<InstaUserShort> privateUserList = userShortList.Value.FindAll(u => u.IsPrivate && u.ProfilePictureId != "unknown");
-            List<long> requestedUser = readRequestedListFromFile();
+
             Console.WriteLine(String.Format("Firstly, Private User Count : {0}", privateUserList.Count));
 
+            List<long> requestedUser = readRequestedListFromFile();
             privateUserList.RemoveAll(item => requestedUser.Contains(item.Pk));
-            
+            Console.WriteLine(String.Format("Secondly, Private User Count : {0}", privateUserList.Count));
+
             if (privateUserList.Count > MaxRequestCount)
             {
                 privateUserList = privateUserList.Take(MaxRequestCount).ToList();
             }
-
             Console.WriteLine(String.Format("Finally, Private User Count : {0}", privateUserList.Count));
 
             writeAllToRequestedFile(privateUserList);
