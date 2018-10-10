@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
-using System.Text;
 using Unsplasharp.Models;
 
-namespace InstaBot.Utils
+namespace InstaBot.API.Utils
 {
     public class FileUtils
     {
@@ -39,6 +39,28 @@ namespace InstaBot.Utils
             }
             catch (Exception ex)
             {
+            }
+        }
+
+        public static List<long> ReadRequestedList()
+        {
+            List<long> requestedList = new List<long>();
+            try
+            {
+                string filePath =  System.Configuration.ConfigurationManager.AppSettings.Get("RequestedFilePath");
+                if (!File.Exists(filePath))
+                {
+                    return requestedList;
+                }
+
+                string[] lines = File.ReadAllLines(filePath);
+                requestedList = lines.Select(Int64.Parse).ToList();
+
+                return requestedList;
+            }
+            catch (Exception ex)
+            {
+                throw;
             }
         }
     }

@@ -1,21 +1,16 @@
-﻿using InstaSharper.API;
+﻿using InstaBot.API.Filter;
+using InstaBot.API.Utils;
+using InstaSharper.API;
 using InstaSharper.API.Builder;
 using InstaSharper.Classes;
-using InstaSharper.Classes.Android.DeviceInfo;
 using InstaSharper.Classes.Models;
-using InstaSharper.Classes.ResponseWrappers;
-using InstaSharper.Classes.ResponseWrappers.BaseResponse;
 using InstaSharper.Logger;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Unsplasharp;
 using Unsplasharp.Models;
-using InstaBot.Utils;
 
 namespace InstaBot.API
 {
@@ -60,16 +55,19 @@ namespace InstaBot.API
             await instaClient.LogoutAsync();
         }
 
-        public async Task MakeFollowRequestAsync(string userName)
+        public async Task MakeFollowRequestAsync(string userName, IFilter<InstaUserShort> filter = null)
         {
             validateInstaClient();
             validateLoggedIn();
 
             IResult<InstaUserShortList> userShortList = await instaClient.GetUserFollowersAsync(userName, PaginationParameters.Empty);
+            filter = filter ?? FollowerFilter.DefaultFilter();
+            var filtered = filter.Apply(userShortList.Value);
 
-            foreach (var user in userShortList.Value)
+            for (int i = 0; i < filtered.Count; i++)
             {
-                await instaClient.FollowUserAsync(user.Pk);
+                await instaClient.FollowUserAsync(filtered[i].Pk);
+                Console.WriteLine($"Requested UserName : {filtered[i].UserName}, Remaining User {filtered.Count - i - 1}");
             }
 
         }

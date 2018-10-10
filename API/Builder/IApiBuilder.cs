@@ -1,8 +1,3 @@
-using System.Net.Http;
-using InstaSharper.Classes;
-using InstaSharper.Classes.Android.DeviceInfo;
-using InstaSharper.Logger;
-
 namespace InstaBot.API.Builder
 {
     public interface IApiBuilder

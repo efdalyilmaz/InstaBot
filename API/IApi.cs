@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using InstaSharper.Classes;
+using InstaBot.API.Filter;
 using InstaSharper.Classes.Models;
-using InstaSharper.Classes.ResponseWrappers;
-using InstaSharper.Classes.ResponseWrappers.BaseResponse;
+using System.Threading.Tasks;
 
 namespace InstaBot.API
 {
@@ -15,7 +10,7 @@ namespace InstaBot.API
 
         Task Logout();
 
-        Task MakeFollowRequestAsync(string userName);
+        Task MakeFollowRequestAsync(string userName, IFilter<InstaUserShort> filter=null);
         
         Task UploadPhotoAsync(string stockCategoryName);
     }

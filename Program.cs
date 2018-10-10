@@ -32,7 +32,7 @@ namespace InstaBot
                 .Build();
 
             await api.Login();
-            await api.UploadPhotoAsync("");
+            await api.MakeFollowRequestAsync("");
             await api.Logout();
 
             return true;
