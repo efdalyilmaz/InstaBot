@@ -1,4 +1,7 @@
-﻿using InstaSharper.API;
+﻿using InstaBot.API;
+using InstaBot.API.Builder;
+using InstaBot.Utils;
+using InstaSharper.API;
 using InstaSharper.API.Builder;
 using InstaSharper.Classes;
 using InstaSharper.Classes.Models;
@@ -8,74 +11,48 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Unsplasharp;
+using Unsplasharp.Models;
 
-namespace instabot
+namespace InstaBot
 {
     public class Program
     {
-
-        #region Privates
-        private static string userName = "";
-        private static string password = "";
-        #endregion Privates
-
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            getUserInfo();
-
-            Console.Write("WhoseFollowers : ");
-            string whoseFollowers = Console.ReadLine();
-            using (Bot bot = new Bot(userName, password))
-            {
-                Task.WaitAny(bot.MakeFollowRequestToPrivateAccount(whoseFollowers, true));
-            }
+            var result = Task.Run(MainAsync).GetAwaiter().GetResult();
+            if (result)
+                return;
 
             Console.WriteLine("Finished");
-            Console.Read();
+            Console.ReadKey();
         }
 
-        private static void getUserInfo()
+        public static async Task<bool> MainAsync()
         {
-            Console.Write("UserName : ");
-            userName = Console.ReadLine();
+            var user = ConsoleUtils.GetUserInfo();
 
-            Console.Write("Password : ");
-            password = readPassword();
-            Console.WriteLine("\n--------------");
+            string applicationId = System.Configuration.ConfigurationManager.AppSettings.Get("ApplicationId");
+            string secretKey = System.Configuration.ConfigurationManager.AppSettings.Get("SecretKey");
 
+            IApi api = ApiBuilder.CreateBuilder()
+                .SetUser(user.Item1, user.Item2)
+                .UseStockApi(true)
+                .SetKeys(applicationId, secretKey)
+                .Build();
+
+            await api.Login();
+            await api.UploadPhotoAsync("");
+            await api.Logout();
+
+            return true;
         }
 
-        private static string readPassword()
-        {
-            string pass = "";
-            do
-            {
-                ConsoleKeyInfo key = Console.ReadKey(true);
-                // Backspace Should Not Work
-                if (key.Key != ConsoleKey.Backspace && key.Key != ConsoleKey.Enter)
-                {
-                    pass += key.KeyChar;
-                    Console.Write("*");
-                }
-                else
-                {
-                    if (key.Key == ConsoleKey.Backspace && pass.Length > 0)
-                    {
-                        pass = pass.Substring(0, (pass.Length - 1));
-                        Console.Write("\b \b");
-                    }
-                    else if (key.Key == ConsoleKey.Enter)
-                    {
-                        break;
-                    }
-                }
-            } while (true);
-
-            return pass;
-        }
     }
 }
