@@ -1,24 +1,8 @@
 ﻿using InstaBot.API;
 using InstaBot.API.Builder;
 using InstaBot.Utils;
-using InstaSharper.API;
-using InstaSharper.API.Builder;
-using InstaSharper.Classes;
-using InstaSharper.Classes.Models;
-using InstaSharper.Logger;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
-using Unsplasharp;
-using Unsplasharp.Models;
 
 namespace InstaBot
 {
