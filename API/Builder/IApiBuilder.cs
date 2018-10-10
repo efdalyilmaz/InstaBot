@@ -1,3 +1,5 @@
+using InstaBot.API.Logger;
+
 namespace InstaBot.API.Builder
 {
     public interface IApiBuilder
@@ -10,5 +12,7 @@ namespace InstaBot.API.Builder
         IApiBuilder UseStockApi(bool useStockApi);
 
         IApiBuilder SetKeys(string applicationId, string secretKey);
+
+        IApiBuilder UseLogger(ILogger logger);
     }
 }

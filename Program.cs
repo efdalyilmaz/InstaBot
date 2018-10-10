@@ -1,5 +1,6 @@
 ﻿using InstaBot.API;
 using InstaBot.API.Builder;
+using InstaBot.API.Logger;
 using InstaBot.Utils;
 using System;
 using System.Threading.Tasks;
@@ -26,6 +27,7 @@ namespace InstaBot
             string secretKey = System.Configuration.ConfigurationManager.AppSettings.Get("SecretKey");
 
             IApi api = ApiBuilder.CreateBuilder()
+                .UseLogger(new ConsoleLogger())
                 .SetUser(user.Item1, user.Item2)
                 .UseStockApi(true)
                 .SetKeys(applicationId, secretKey)

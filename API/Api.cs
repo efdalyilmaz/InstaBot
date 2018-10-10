@@ -1,4 +1,5 @@
 ﻿using InstaBot.API.Filter;
+using InstaBot.API.Logger;
 using InstaBot.API.Utils;
 using InstaSharper.API;
 using InstaSharper.API.Builder;
@@ -18,21 +19,24 @@ namespace InstaBot.API
     {
         private readonly IInstaApi instaClient;
         private readonly UnsplasharpClient stockClient;
+        private readonly ILogger logger;
 
-        public Api(string userName, string password)
+        public Api(ILogger logger, string userName, string password)
         {
             UserSessionData user = new UserSessionData();
             user.UserName = userName;
             user.Password = password;
 
+            this.logger = logger;
+
             instaClient = InstaApiBuilder.CreateBuilder()
                     .SetUser(user)
-                    .UseLogger(new DebugLogger(LogLevel.Exceptions))
+                    .UseLogger(new DebugLogger(LogLevel.Info))
                     .SetRequestDelay(RequestDelay.FromSeconds(3, 5))
                     .Build();
         }
 
-        public Api(string userName, string password, string applicationId, string secretKey) : this(userName, password)
+        public Api(ILogger logger, string userName, string password, string applicationId, string secretKey) : this(logger, userName, password)
         {
             stockClient = new UnsplasharpClient(applicationId, secretKey);
         }
@@ -42,11 +46,11 @@ namespace InstaBot.API
             var loginRequest = await instaClient.LoginAsync();
             if (loginRequest.Succeeded)
             {
-                Console.WriteLine("Success");
+                logger.Write("Success");
             }
             else
             {
-                Console.WriteLine(loginRequest.Info.Message);
+                logger.Write(loginRequest.Info.Message);
             }
         }
 
@@ -67,7 +71,7 @@ namespace InstaBot.API
             for (int i = 0; i < filtered.Count; i++)
             {
                 await instaClient.FollowUserAsync(filtered[i].Pk);
-                Console.WriteLine($"Requested UserName : {filtered[i].UserName}, Remaining User {filtered.Count - i - 1}");
+                logger.Write($"Requested UserName : {filtered[i].UserName}, Remaining User {filtered.Count - i - 1}");
             }
 
         }
@@ -82,7 +86,7 @@ namespace InstaBot.API
             FileUtils.DownloadAllPhotos(photoList);
 
             int uploadedPhoto = 1;
-            Console.WriteLine(String.Format("Downloaded photo count {0}", FileUtils.ListOfDownloadedPhoto));
+            logger.Write(String.Format("Downloaded photo count {0}", FileUtils.ListOfDownloadedPhoto));
             foreach (var photo in FileUtils.ListOfDownloadedPhoto)
             {
 
@@ -95,7 +99,7 @@ namespace InstaBot.API
 
                 await uploadPhotoAsync(filePath, caption);
 
-                Console.WriteLine(String.Format("{0}. uploaded. PhotoId : {1} ", uploadedPhoto, photo.Id));
+                logger.Write(String.Format("{0}. uploaded. PhotoId : {1} ", uploadedPhoto, photo.Id));
                 uploadedPhoto++;
 
             }
@@ -111,7 +115,7 @@ namespace InstaBot.API
             };
 
             var result = await instaClient.UploadPhotoAsync(mediaImage, caption);
-            Console.WriteLine(result.Succeeded
+            logger.Write(result.Succeeded
                 ? $"Media created: {result.Value.Pk}, {result.Value.Caption}"
                 : $"Unable to upload photo: {result.Info.Message}");
         }

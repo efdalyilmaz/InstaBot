@@ -1,4 +1,5 @@
-﻿using System;
+﻿using InstaBot.API.Logger;
+using System;
 
 namespace InstaBot.API.Builder
 {
@@ -10,6 +11,8 @@ namespace InstaBot.API.Builder
         private bool useStockApi;
         private string applicationId;
         private string secretKey;
+        private ILogger logger;
+
 
         private ApiBuilder()
         {
@@ -30,10 +33,10 @@ namespace InstaBot.API.Builder
                 if (String.IsNullOrEmpty(secretKey))
                     throw new ArgumentNullException($"Password must be specified");
 
-                return new Api(userName, password, applicationId, secretKey);
+                return new Api(logger, userName, password, applicationId, secretKey);
             }
 
-            return new Api(userName, password);
+            return new Api(logger, userName, password);
         }
 
         public IApiBuilder SetUser(string userName, string password)
@@ -53,6 +56,12 @@ namespace InstaBot.API.Builder
         {
             this.applicationId = applicationId;
             this.secretKey = secretKey;
+            return this;
+        }
+
+        public IApiBuilder UseLogger(ILogger logger)
+        {
+            this.logger = logger;
             return this;
         }
 
