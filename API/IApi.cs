@@ -1,4 +1,5 @@
 using InstaBot.API.Filter;
+using InstaBot.API.Processors;
 using InstaSharper.Classes.Models;
 using System.Threading.Tasks;
 
@@ -12,6 +13,6 @@ namespace InstaBot.API
 
         Task MakeFollowRequestAsync(string userName, IFilter<InstaUserShort> filter=null);
         
-        Task UploadPhotoAsync(string stockCategoryName);
+        Task UploadPhotoAsync(string stockCategoryName, IDownloadProcessor downloadProcessor);
     }
 }

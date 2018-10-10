@@ -1,5 +1,7 @@
-﻿using InstaBot.API.Filter;
+﻿using InstaBot.API.Builder;
+using InstaBot.API.Filter;
 using InstaBot.API.Logger;
+using InstaBot.API.Processors;
 using InstaBot.API.Utils;
 using InstaSharper.API;
 using InstaSharper.API.Builder;
@@ -9,6 +11,7 @@ using InstaSharper.Logger;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Unsplasharp;
 using Unsplasharp.Models;
@@ -76,26 +79,26 @@ namespace InstaBot.API
 
         }
 
-        public async Task UploadPhotoAsync(string stockCategoryName)
+        public async Task UploadPhotoAsync(string stockCategoryName, IDownloadProcessor downloadProcessor)
         {
             validateInstaClient();
             validateLoggedIn();
             validateStockClient();
+            
+            List<Photo> newPhotoList = await getDownloadablePhotoList(stockCategoryName, downloadProcessor);
 
-            List<Photo> photoList = await stockClient.SearchPhotos(stockCategoryName, 1, 30);
-            FileUtils.DownloadAllPhotos(photoList);
+            //Initally added for only one image upload
+            List<Photo> photoList = new List<Photo>();
+            photoList.Add(newPhotoList[0]);
+            await downloadProcessor.DownloadAllPhotosAsync(photoList);
+
 
             int uploadedPhoto = 1;
-            logger.Write(String.Format("Downloaded photo count {0}", FileUtils.ListOfDownloadedPhoto));
-            foreach (var photo in FileUtils.ListOfDownloadedPhoto)
+            logger.Write(String.Format("Downloaded photo count {0}", photoList.Count));
+            foreach (var photo in photoList)
             {
-
-                const string imagesSubdirectory = @"D:\unsplash\holiday";
-                string filePath = imagesSubdirectory + @"\" + photo.Id + ".jpg";
-
-                string caption = photo.Description + " \r\n \r\n";
-                caption += "Thanx to " + photo.User.Name + " \r\n\r\n\r\n";
-                caption += "#holiday #travel #trip \r\n";
+                string filePath = FileUtils.GetFullFilePath(downloadProcessor.Directory, photo.Id, ApiConstans.PHOTO_EXTENSION);
+                string caption = createCaptionText(photo);
 
                 await uploadPhotoAsync(filePath, caption);
 
@@ -120,7 +123,34 @@ namespace InstaBot.API
                 : $"Unable to upload photo: {result.Info.Message}");
         }
 
+        private async Task<List<Photo>> getDownloadablePhotoList(string stockCategoryName, IDownloadProcessor downloadProcessor)
+        {
+            var downloaded = downloadProcessor.GetAllDownloadedPhotoNames();
+            
+            List<Photo> photoList = new List<Photo>();
+            int page = 6;
+            while(photoList.Count == 0)
+            {
+                List<Photo> searchList = await stockClient.SearchPhotos(stockCategoryName, page, 30);
+                photoList = searchList;
+                photoList.RemoveAll(p => downloaded.Contains(p.Id));
+                page++;
+            }
+
+            return photoList;
+        }
+
+        private string createCaptionText(Photo photo)
+        {
+            string caption = photo.Description + " \r\n \r\n";
+            caption += "Thanx to " + photo.User.Name + " \r\n\r\n\r\n";
+            caption += "#holiday #travel #trip \r\n";
+
+            return caption;
+        }
+
         #region private part
+
 
         private void validateLoggedIn()
         {
