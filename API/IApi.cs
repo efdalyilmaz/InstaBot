@@ -11,6 +11,8 @@ namespace InstaBot.API
 
         Task Logout();
 
+        Task LikeMediaAsync(string hashtag);
+
         Task MakeFollowRequestAsync(string userName, IFilter<InstaUserShort> filter=null);
         
         Task UploadPhotoAsync(string stockCategoryName, int photoCount, IDownloadProcessor downloadProcessor);

@@ -12,7 +12,7 @@ namespace InstaBot.API.Filter
         private bool? IsPrivate;
         private bool? IsKnownProfile;
         private bool IsCheckedRequested;
-        private int MaxFollowerCount = ApiConstans.MAX_FOLLOWER_REQUEST_COUNT;
+        private int MaxFollowerCount = ApiConstans.MAX_REQUEST_COUNT;
         private ILogger logger;
 
         public FollowerFilter(ILogger logger)

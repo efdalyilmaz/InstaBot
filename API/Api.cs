@@ -63,6 +63,23 @@ namespace InstaBot.API
             await instaClient.LogoutAsync();
         }
 
+        public async Task LikeMediaAsync(string hashtag)
+        {
+            validateInstaClient();
+            validateLoggedIn();
+
+            IResult<InstaTagFeed> tagFeeds = await instaClient.GetTagFeedAsync(hashtag, PaginationParameters.MaxPagesToLoad(10));
+            List<InstaMedia> mediaList = tagFeeds.Value.Medias.FindAll(m => m.LikesCount > ApiConstans.MIN_LIKES_COUNT).Take(ApiConstans.MAX_REQUEST_COUNT).ToList();
+
+            for (int i = 0; i < mediaList.Count; i++)
+            {
+                instaClient.LikeMediaAsync(mediaList[i].Pk);
+                await Task.Delay(ApiConstans.DELAY_TIME);
+                logger.Write($"Liked Media User: {mediaList[i].User.UserName}, Remaining Media {mediaList.Count - i - 1}");
+            }
+
+        }
+
         public async Task MakeFollowRequestAsync(string userName, IFilter<InstaUserShort> filter = null)
         {
             validateInstaClient();
@@ -101,7 +118,7 @@ namespace InstaBot.API
                 string caption = createCaptionText(photo);
 
                 await uploadPhotoAsync(filePath, caption);
-
+                
                 logger.Write(String.Format("{0}. uploaded. PhotoId : {1} ", uploadedPhoto, photo.Id));
                 uploadedPhoto++;
 
