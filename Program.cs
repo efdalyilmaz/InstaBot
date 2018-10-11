@@ -42,6 +42,7 @@ namespace InstaBot
             
             await api.Login();
             await api.MakeFollowRequestAsync("");
+            await api.UploadPhotoAsync(searchCategory, 2, downloadProcessor);
             await api.Logout();
 
             return true;
