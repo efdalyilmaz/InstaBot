@@ -1,4 +1,5 @@
-﻿using System;
+﻿using InstaSharper.Classes.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -42,6 +43,32 @@ namespace InstaBot.API.Utils
             string filePath = Path.Combine(directory, fileName);
             return Path.ChangeExtension(filePath, extension);
         }
+
+        public static void WriteAllToRequestedFile(List<InstaUserShort> privateUserList)
+        {
+            try
+            {
+                string filePath = System.Configuration.ConfigurationManager.AppSettings.Get("RequestedFilePath");
+                if (!File.Exists(filePath))
+                {
+                    File.Create(filePath);
+                }
+
+                using (StreamWriter w = File.AppendText(filePath))
+                {
+                    foreach (var item in privateUserList)
+                    {
+                        w.WriteLine(item.Pk.ToString());
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
     }
 }
 

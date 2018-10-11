@@ -36,7 +36,7 @@ namespace InstaBot.API
             instaClient = InstaApiBuilder.CreateBuilder()
                     .SetUser(user)
                     .UseLogger(new DebugLogger(LogLevel.Info))
-                    .SetRequestDelay(RequestDelay.FromSeconds(3, 5))
+                    .SetRequestDelay(RequestDelay.FromSeconds(1, 3))
                     .Build();
         }
 
@@ -68,16 +68,22 @@ namespace InstaBot.API
             validateInstaClient();
             validateLoggedIn();
 
-            IResult<InstaUserShortList> userShortList = await instaClient.GetUserFollowersAsync(userName, PaginationParameters.MaxPagesToLoad(10));
+            IResult<InstaUserShortList> userShortList = await instaClient.GetUserFollowersAsync(userName, PaginationParameters.MaxPagesToLoad(20));
             filter = filter ?? FollowerFilter.DefaultFilter();
             var filtered = filter.Apply(userShortList.Value);
 
             for (int i = 0; i < filtered.Count; i++)
             {
-                await instaClient.FollowUserAsync(filtered[i].Pk);
+                if(i%ApiConstans.DELAY_INTERVAL == 0)
+                {
+                    await Task.Delay(ApiConstans.DELAY_TIME);
+                }
+
+                instaClient.FollowUserAsync(filtered[i].Pk);
                 logger.Write($"Requested UserName : {filtered[i].UserName}, Remaining User {filtered.Count - i - 1}");
             }
 
+            FileUtils.WriteAllToRequestedFile(filtered);
         }
 
         public async Task UploadPhotoAsync(string stockCategoryName,int photoCount, IDownloadProcessor downloadProcessor)

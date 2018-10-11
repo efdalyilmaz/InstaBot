@@ -29,7 +29,7 @@ namespace InstaBot
             string secretKey = System.Configuration.ConfigurationManager.AppSettings.Get("SecretKey");
             string downloadPath = System.Configuration.ConfigurationManager.AppSettings.Get("DownloadPath");
 
-            
+
             IApi api = ApiBuilder.CreateBuilder()
                 .UseLogger(new ConsoleLogger())
                 .SetUser(user.Item1, user.Item2)
@@ -41,7 +41,7 @@ namespace InstaBot
             IDownloadProcessor downloadProcessor = new DownloadProcessor(new ConsoleLogger(), FileUtils.GetFullDirectory(downloadPath, searchCategory));
             
             await api.Login();
-            await api.UploadPhotoAsync(searchCategory, 1, downloadProcessor);
+            await api.MakeFollowRequestAsync("");
             await api.Logout();
 
             return true;
