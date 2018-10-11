@@ -16,7 +16,7 @@ namespace InstaBot.API.Utils
             List<long> requestedList = new List<long>();
             try
             {
-                string filePath =  System.Configuration.ConfigurationManager.AppSettings.Get("RequestedFilePath");
+                string filePath = System.Configuration.ConfigurationManager.AppSettings.Get("RequestedFilePath");
                 if (!File.Exists(filePath))
                 {
                     return requestedList;
@@ -46,27 +46,21 @@ namespace InstaBot.API.Utils
 
         public static void WriteAllToRequestedFile(List<InstaUserShort> privateUserList)
         {
-            try
+            string filePath = System.Configuration.ConfigurationManager.AppSettings.Get("RequestedFilePath");
+            if (!File.Exists(filePath))
             {
-                string filePath = System.Configuration.ConfigurationManager.AppSettings.Get("RequestedFilePath");
-                if (!File.Exists(filePath))
+                File.Create(filePath);
+            }
+
+            using (StreamWriter w = File.AppendText(filePath))
+            {
+                foreach (var item in privateUserList)
                 {
-                    File.Create(filePath);
+                    w.WriteLine(item.Pk.ToString());
                 }
 
-                using (StreamWriter w = File.AppendText(filePath))
-                {
-                    foreach (var item in privateUserList)
-                    {
-                        w.WriteLine(item.Pk.ToString());
-                    }
-
-                }
             }
-            catch (Exception ex)
-            {
 
-            }
         }
 
     }
