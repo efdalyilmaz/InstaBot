@@ -8,7 +8,7 @@ namespace InstaBot.API.Logger
     {
         public void Write(string text)
         {
-            Console.Write(text);
+            Console.WriteLine(text);
         }
     }
 }

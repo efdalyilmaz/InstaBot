@@ -67,7 +67,7 @@ namespace InstaBot.API
             validateInstaClient();
             validateLoggedIn();
 
-            IResult<InstaUserShortList> userShortList = await instaClient.GetUserFollowersAsync(userName, PaginationParameters.Empty);
+            IResult<InstaUserShortList> userShortList = await instaClient.GetUserFollowersAsync(userName, PaginationParameters.MaxPagesToLoad(10));
             filter = filter ?? FollowerFilter.DefaultFilter();
             var filtered = filter.Apply(userShortList.Value);
 
@@ -79,17 +79,15 @@ namespace InstaBot.API
 
         }
 
-        public async Task UploadPhotoAsync(string stockCategoryName, IDownloadProcessor downloadProcessor)
+        public async Task UploadPhotoAsync(string stockCategoryName,int photoCount, IDownloadProcessor downloadProcessor)
         {
             validateInstaClient();
             validateLoggedIn();
             validateStockClient();
             
-            List<Photo> newPhotoList = await getDownloadablePhotoList(stockCategoryName, downloadProcessor);
-
-            //Initally added for only one image upload
-            List<Photo> photoList = new List<Photo>();
-            photoList.Add(newPhotoList[0]);
+            List<Photo> photoList = await getDownloadablePhotoList(stockCategoryName, downloadProcessor);
+            photoList = photoList.Take(photoCount).ToList();
+            
             await downloadProcessor.DownloadAllPhotosAsync(photoList);
 
 
@@ -144,7 +142,7 @@ namespace InstaBot.API
         {
             string caption = photo.Description + " \r\n \r\n";
             caption += "Thanx to " + photo.User.Name + " \r\n\r\n\r\n";
-            caption += "#holiday #travel #trip \r\n";
+            caption += "#holiday #travel #trip #explore #discover \r\n";
 
             return caption;
         }

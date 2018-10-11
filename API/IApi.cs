@@ -13,6 +13,6 @@ namespace InstaBot.API
 
         Task MakeFollowRequestAsync(string userName, IFilter<InstaUserShort> filter=null);
         
-        Task UploadPhotoAsync(string stockCategoryName, IDownloadProcessor downloadProcessor);
+        Task UploadPhotoAsync(string stockCategoryName, int photoCount, IDownloadProcessor downloadProcessor);
     }
 }
