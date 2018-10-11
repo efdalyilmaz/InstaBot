@@ -41,7 +41,7 @@ namespace InstaBot
             IDownloadProcessor downloadProcessor = new DownloadProcessor(new ConsoleLogger(), FileUtils.GetFullDirectory(downloadPath, searchCategory));
             
             await api.Login();
-            await api.MakeFollowRequestAsync("xanaduhotels");
+            await api.MakeFollowRequestAsync("");
             await api.Logout();
 
             return true;
