@@ -74,12 +74,8 @@ namespace InstaBot.API
 
             for (int i = 0; i < filtered.Count; i++)
             {
-                if(i%ApiConstans.DELAY_INTERVAL == 0)
-                {
-                    await Task.Delay(ApiConstans.DELAY_TIME);
-                }
-
                 instaClient.FollowUserAsync(filtered[i].Pk);
+                await Task.Delay(ApiConstans.DELAY_TIME);
                 logger.Write($"Requested UserName : {filtered[i].UserName}, Remaining User {filtered.Count - i - 1}");
             }
 
