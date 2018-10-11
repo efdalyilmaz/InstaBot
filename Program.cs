@@ -41,7 +41,7 @@ namespace InstaBot
             IDownloadProcessor downloadProcessor = new DownloadProcessor(new ConsoleLogger(), FileUtils.GetFullDirectory(downloadPath, searchCategory));
             
             await api.Login();
-            await api.UploadPhotoAsync(searchCategory, 3, downloadProcessor);
+            await api.UploadPhotoAsync(searchCategory, 1, downloadProcessor);
             await api.Logout();
 
             return true;

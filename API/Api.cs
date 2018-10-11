@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Unsplasharp;
 using Unsplasharp.Models;
@@ -85,9 +86,8 @@ namespace InstaBot.API
             validateLoggedIn();
             validateStockClient();
             
-            List<Photo> photoList = await getDownloadablePhotoList(stockCategoryName, downloadProcessor);
-            photoList = photoList.Take(photoCount).ToList();
-            
+            List<Photo> photoList = await getDownloadablePhotoList(stockCategoryName, photoCount, downloadProcessor);
+           
             await downloadProcessor.DownloadAllPhotosAsync(photoList);
 
 
@@ -121,7 +121,7 @@ namespace InstaBot.API
                 : $"Unable to upload photo: {result.Info.Message}");
         }
 
-        private async Task<List<Photo>> getDownloadablePhotoList(string stockCategoryName, IDownloadProcessor downloadProcessor)
+        private async Task<List<Photo>> getDownloadablePhotoList(string stockCategoryName, int photoCount, IDownloadProcessor downloadProcessor)
         {
             var downloaded = downloadProcessor.GetAllDownloadedPhotoNames();
             
@@ -135,16 +135,63 @@ namespace InstaBot.API
                 page++;
             }
 
+            photoList = photoList.Take(photoCount).ToList();
+            for (int i = 0; i < photoList.Count; i++)
+            {
+                //for missing information
+                photoList[i] = await stockClient.GetPhoto(photoList[i].Id);
+            }
+
             return photoList;
         }
 
         private string createCaptionText(Photo photo)
         {
-            string caption = photo.Description + " \r\n \r\n";
-            caption += "Thanx to " + photo.User.Name + " \r\n\r\n\r\n";
-            caption += "#holiday #travel #trip #explore #discover \r\n";
+            StringBuilder caption = new StringBuilder();
 
-            return caption;
+            if (!String.IsNullOrEmpty(photo.Description))
+            {
+                caption.Append(photo.Description);
+                caption.Append(System.Environment.NewLine);
+            }
+            
+
+            StringBuilder locationTags = new StringBuilder();
+            if (photo.Location != null)
+            {
+                if (!String.IsNullOrEmpty(photo.Location.Title))
+                {
+                    caption.Append(photo.Location.Title);
+                    caption.Append(System.Environment.NewLine);
+                }
+                
+                if (!String.IsNullOrEmpty(photo.Location.Country))
+                {
+                    locationTags.Append($"#{photo.Location.Country} ");
+                }
+
+                if (!String.IsNullOrEmpty(photo.Location.City))
+                {
+                    locationTags.Append($"#{photo.Location.City} ");
+                }
+
+                if (!String.IsNullOrEmpty(photo.Location.Name) && !locationTags.ToString().Contains(photo.Location.Name))
+                {
+                    locationTags.Append($"#{photo.Location.Name} ");
+                }
+            }
+
+            if (!String.IsNullOrEmpty(photo.User.Name))
+            {
+                caption.Append($"Thanx to {photo.User.Name}");
+                caption.Append(System.Environment.NewLine);
+            }
+            
+            
+            caption.Append($"#holiday #travel #trip #explore #discover {locationTags.ToString()}");
+            
+
+            return caption.ToString();
         }
 
         #region private part
