@@ -186,17 +186,17 @@ namespace InstaBot.API
                 
                 if (!String.IsNullOrEmpty(photo.Location.Country))
                 {
-                    locationTags.Append($"#{photo.Location.Country} ");
+                    locationTags.Append($"#{photo.Location.Country.ToLower().Replace(" ", "")} ");
                 }
 
                 if (!String.IsNullOrEmpty(photo.Location.City))
                 {
-                    locationTags.Append($"#{photo.Location.City} ");
+                    locationTags.Append($"#{photo.Location.City.ToLower().Replace(" ", "")} ");
                 }
 
                 if (!String.IsNullOrEmpty(photo.Location.Name) && !locationTags.ToString().Contains(photo.Location.Name))
                 {
-                    locationTags.Append($"#{photo.Location.Name} ");
+                    locationTags.Append($"#{photo.Location.Name.ToLower().Replace(" ", "")} ");
                 }
             }
 
