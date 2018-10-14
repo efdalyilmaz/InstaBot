@@ -44,7 +44,7 @@ namespace InstaBot.API
 
         public async Task MakeFollowRequestAsync(string userName, IFilter<UserInfo> filter = null)
         {
-            List<UserInfo> userInfoList = await instaService.GetUserFollowers(userName);
+            List<UserInfo> userInfoList = await instaService.GetUserFollowers(userName,20);
             filter = filter ?? FollowerFilter.DefaultFilter();
 
             var filtered = filter.Apply(userInfoList);
@@ -56,7 +56,7 @@ namespace InstaBot.API
                 logger.Write($"Requested UserName : {filtered[i].UserName}, Remaining User {filtered.Count - i - 1}");
             }
 
-            FileUtils.WriteAllToRequestedFile(userInfoList);
+            FileUtils.WriteAllToRequestedFile(filtered);
         }
 
         public async Task UploadPhotoAsync(string stockCategoryName,int photoCount, IDownloadProcessor downloadProcessor)

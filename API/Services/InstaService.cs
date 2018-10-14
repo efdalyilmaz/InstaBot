@@ -83,7 +83,8 @@ namespace InstaBot.API.Services
             validateInstaClient();
             validateLoggedIn();
 
-             await instaApi.FollowUserAsync(userId);
+            IResult<InstaFriendshipStatus> friendshipStatus = await instaApi.FollowUserAsync(userId);
+            logger.WriteAllProperties(friendshipStatus.Value);
         }
 
         public async Task UploadPhotoAsync(string fullpath, string caption)

@@ -7,5 +7,7 @@ namespace InstaBot.API.Logger
     public interface ILogger
     {
         void Write(string text);
+
+        void WriteAllProperties(object obj);
     }
 }
