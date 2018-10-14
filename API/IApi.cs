@@ -10,7 +10,9 @@ namespace InstaBot.API
         Task LikeMediaAsync(string hashtag);
 
         Task MakeFollowRequestAsync(string userName, IFilter<UserInfo> filter=null);
-        
+
+        Task MakeAllFollowingsFollowersFollowRequestAsync(int top=10, IFilter<UserInfo> filter = null);
+
         Task UploadPhotoAsync(string stockCategoryName, int photoCount, IDownloadProcessor downloadProcessor);
     }
 }

@@ -16,12 +16,13 @@ namespace InstaBot.API.Services
     {
         private readonly IInstaApi instaApi;
         private readonly ILogger logger;
+        private readonly UserSessionData user;
 
         public InstaService(ILogger logger, string userName, string password)
         {
             this.logger = logger;
 
-            UserSessionData user = new UserSessionData();
+            user = new UserSessionData();
             user.UserName = userName;
             user.Password = password;
 
@@ -74,6 +75,16 @@ namespace InstaBot.API.Services
 
             IResult<InstaUserShortList> userShortList = await instaApi.GetUserFollowersAsync(userName, PaginationParameters.MaxPagesToLoad(maxPageToLoad));
 
+            return userShortList.Value.ToUserInfoList();
+        }
+
+        public async Task<List<UserInfo>> GetCurrentUserFollowings(int maxPageToLoad = 10)
+        {
+            validateInstaClient();
+            validateLoggedIn();
+
+            IResult<InstaUserShortList> userShortList = await instaApi.GetUserFollowingAsync(user.UserName, PaginationParameters.MaxPagesToLoad(maxPageToLoad));
+
 
             return userShortList.Value.ToUserInfoList();
         }
@@ -84,7 +95,6 @@ namespace InstaBot.API.Services
             validateLoggedIn();
 
             IResult<InstaFriendshipStatus> friendshipStatus = await instaApi.FollowUserAsync(userId);
-            logger.WriteAllProperties(friendshipStatus.Value);
         }
 
         public async Task UploadPhotoAsync(string fullpath, string caption)

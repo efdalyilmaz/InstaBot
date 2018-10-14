@@ -59,6 +59,20 @@ namespace InstaBot.API
             FileUtils.WriteAllToRequestedFile(filtered);
         }
 
+        public async Task MakeAllFollowingsFollowersFollowRequestAsync(int top = 10, IFilter<UserInfo> filter = null)
+        {
+            List<UserInfo> userInfoList = await instaService.GetCurrentUserFollowings();
+            userInfoList = userInfoList.OrderBy(u => u.Id).Take(top).ToList();
+
+            int requested = 1;
+            foreach (var currentUserFollowing in userInfoList)
+            {
+                logger.Write($"Following UserName : {currentUserFollowing.UserName}, Requested Count : {requested}");
+                await MakeFollowRequestAsync(currentUserFollowing.UserName, filter);
+                requested++;
+            }
+        }
+
         public async Task UploadPhotoAsync(string stockCategoryName,int photoCount, IDownloadProcessor downloadProcessor)
         {
             List<string> downloadedPhotos = downloadProcessor.GetAllDownloadedPhotoNames();
