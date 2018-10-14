@@ -1,8 +1,9 @@
-﻿using System;
+﻿using InstaBot.API.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Unsplasharp.Models;
+
 
 namespace InstaBot.API.Processors
 {

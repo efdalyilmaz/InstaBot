@@ -1,13 +1,13 @@
 ﻿using InstaBot.API.Logger;
+using InstaBot.API.Models;
 using InstaBot.API.Utils;
-using InstaSharper.Classes.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace InstaBot.API.Filter
 {
-    public sealed class FollowerFilter : IFilter<InstaUserShort>
+    public sealed class FollowerFilter : IFilter<UserInfo>
     {
         private bool? IsPrivate;
         private bool? IsKnownProfile;
@@ -44,11 +44,11 @@ namespace InstaBot.API.Filter
             return this;
         }
 
-        public List<InstaUserShort> Apply(List<InstaUserShort> list)
+        public List<UserInfo> Apply(List<UserInfo> list)
         {
             logger.Write(String.Format("Firstly, Follower User Count : {0}", list.Count));
 
-            List<InstaUserShort> filtered = list;
+            List<UserInfo> filtered = list;
             if (IsPrivate != null)
             {
                 filtered= filtered.FindAll(p => p.IsPrivate == IsPrivate.GetValueOrDefault());
@@ -57,22 +57,14 @@ namespace InstaBot.API.Filter
 
             if (IsKnownProfile != null)
             {
-                if (IsKnownProfile.GetValueOrDefault())
-                {
-                    filtered = filtered.FindAll(p => p.ProfilePictureId != ApiConstans.UNKNOWN);
-                }
-                else
-                {
-                    filtered = filtered.FindAll(p => p.ProfilePictureId == ApiConstans.UNKNOWN);
-                }
-
+                filtered = filtered.FindAll(p => p.HasProfilePicture == IsKnownProfile.GetValueOrDefault());
                 logger.Write(String.Format("IsKnownProfile Filter, Follower User Count : {0}", filtered.Count));
             }
 
             if(IsCheckedRequested)
             {
                 var requestedUser = FileUtils.ReadRequestedList();
-                filtered.RemoveAll(item => requestedUser.Contains(item.Pk));
+                filtered.RemoveAll(item => requestedUser.Contains(item.Id));
 
                 logger.Write(String.Format("CheckRequested Filter, Follower User Count : {0}", filtered.Count));
             }

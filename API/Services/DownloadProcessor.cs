@@ -1,4 +1,5 @@
 ﻿using InstaBot.API.Logger;
+using InstaBot.API.Models;
 using InstaBot.API.Utils;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Unsplasharp.Models;
+
 
 namespace InstaBot.API.Processors
 {
@@ -51,7 +52,7 @@ namespace InstaBot.API.Processors
         {
             using (WebClient client = new WebClient())
             {
-                string uri = photo.Links.Download;
+                string uri = photo.DownloadLink;
                 client.DownloadFileTaskAsync(new Uri(uri), FileUtils.GetFullFilePath(Directory, photo.Id, ApiConstans.PHOTO_EXTENSION));
             }
         }
@@ -60,7 +61,7 @@ namespace InstaBot.API.Processors
         {
             using (WebClient client = new WebClient())
             {
-                string uri = photo.Links.Download;
+                string uri = photo.DownloadLink;
                 client.DownloadFile(new Uri(uri), FileUtils.GetFullFilePath(Directory, photo.Id, ApiConstans.PHOTO_EXTENSION));
             }
         }

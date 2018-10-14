@@ -1,19 +1,15 @@
 using InstaBot.API.Filter;
+using InstaBot.API.Models;
 using InstaBot.API.Processors;
-using InstaSharper.Classes.Models;
 using System.Threading.Tasks;
 
 namespace InstaBot.API
 {
     public interface IApi
     {
-        Task Login();
-
-        Task Logout();
-
         Task LikeMediaAsync(string hashtag);
 
-        Task MakeFollowRequestAsync(string userName, IFilter<InstaUserShort> filter=null);
+        Task MakeFollowRequestAsync(string userName, IFilter<UserInfo> filter=null);
         
         Task UploadPhotoAsync(string stockCategoryName, int photoCount, IDownloadProcessor downloadProcessor);
     }
