@@ -1,4 +1,5 @@
-﻿using System;
+﻿using InstaBot.API.Utils;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -36,20 +37,9 @@ namespace InstaBot.API.Models
                     caption.Append(System.Environment.NewLine);
                 }
 
-                if (!String.IsNullOrEmpty(this.Location.Country))
-                {
-                    locationTags.Append($"#{this.Location.Country.Replace(" ", "")} ");
-                }
-
-                if (!String.IsNullOrEmpty(this.Location.City))
-                {
-                    locationTags.Append($"#{this.Location.City.Replace(" ", "")} ");
-                }
-
-                if (!String.IsNullOrEmpty(this.Location.Name) && !locationTags.ToString().Contains(this.Location.Name))
-                {
-                    locationTags.Append($"#{this.Location.Name.Replace(" ", "")} ");
-                }
+                locationTags.AddTag(this.Location.Country)
+                            .AddTag(this.Location.City)
+                            .AddTag(this.Location.Name);
             }
 
             if (!String.IsNullOrEmpty(this.User.Name))
@@ -58,8 +48,8 @@ namespace InstaBot.API.Models
                 caption.Append(System.Environment.NewLine);
             }
 
-
-            caption.Append($"#holiday #travel #trip #explore #discover {locationTags.ToString().ToLower(System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))}");
+            string additionalLocationTags = locationTags.ToString().ToLower(System.Globalization.CultureInfo.CreateSpecificCulture("en-US"));
+            caption.Append($"#holiday #travel #trip #explore #discover {additionalLocationTags}");
 
             return caption.ToString();
         }

@@ -13,10 +13,10 @@ namespace InstaBot.API.Models
                 Id = photo.Id,
                 Description = photo.Description,
                 DownloadLink = photo.Links.Download,
-                Location = photo.Location.ToLocation(),
+                Location = photo.Location != null ? photo.Location.ToLocation() : new Location(),
                 User = new UserInfo
                 {
-                    Name = photo.User.Name
+                    Name = photo.User != null ? photo.User.Name : String.Empty
                 }
             };
         }
