@@ -44,7 +44,7 @@ namespace InstaBot.API
 
         public async Task MakeFollowRequestAsync(string userName, IFilter<UserInfo> filter = null)
         {
-            List<UserInfo> userInfoList = await instaService.GetUserFollowers(userName,20);
+            List<UserInfo> userInfoList = await instaService.GetUserFollowers(userName, 20);
             filter = filter ?? FollowerFilter.DefaultFilter();
 
             var filtered = filter.Apply(userInfoList);
@@ -59,21 +59,47 @@ namespace InstaBot.API
             FileUtils.WriteAllToRequestedFile(filtered);
         }
 
-        public async Task MakeAllFollowingsFollowersFollowRequestAsync(int top = 10, IFilter<UserInfo> filter = null)
+        public async Task MakeAllFollowingsFollowersFollowRequestAsync(int top = 1000, IFilter<UserInfo> filter = null)
         {
-            List<UserInfo> userInfoList = await instaService.GetCurrentUserFollowings();
-            userInfoList = userInfoList.OrderBy(u => u.Id).Take(top).ToList();
+            List<UserInfo> currentUserFollowingList = await instaService.GetCurrentUserFollowings();
+            List<UserInfo> requestList = new List<UserInfo>();
+            RandomGenerator random = new RandomGenerator(currentUserFollowingList.Count);
 
-            int requested = 1;
-            foreach (var currentUserFollowing in userInfoList)
+            for (int i = 0; i < currentUserFollowingList.Count; i++)
             {
-                logger.Write($"Following UserName : {currentUserFollowing.UserName}, Requested Count : {requested}");
-                await MakeFollowRequestAsync(currentUserFollowing.UserName, filter);
-                requested++;
+                int index = random.Different();
+                var following = currentUserFollowingList[index];
+                logger.Write($"Random UserName : {following.UserName}, Index Order {i}");
+                List<UserInfo> userInfoList = await instaService.GetUserFollowers(following.UserName, 10);
+                filter = filter ?? FollowerFilter.DefaultFilter();
+
+
+                var filtered = filter.Apply(userInfoList);
+                filtered.RemoveAll(u => currentUserFollowingList.Exists(c => c.Id == u.Id));
+                if (filtered != null && filtered.Count > 0)
+                {
+                    requestList.AddRange(filtered);
+                }
+
+                if (requestList.Count > top)
+                {
+                    break;
+                }
             }
+
+            requestList = requestList.Take(top).ToList();
+
+            for (int i = 0; i < requestList.Count; i++)
+            {
+                instaService.FollowUserAsync(requestList[i].Id);
+                await Task.Delay(ApiConstans.DELAY_TIME);
+                logger.Write($"Requested UserName : {requestList[i].UserName}, Remaining User {requestList.Count - i - 1}");
+            }
+
+            FileUtils.WriteAllToRequestedFile(requestList);
         }
 
-        public async Task UploadPhotoAsync(string stockCategoryName,int photoCount, IDownloadProcessor downloadProcessor)
+        public async Task UploadPhotoAsync(string stockCategoryName, int photoCount, IDownloadProcessor downloadProcessor)
         {
             List<string> downloadedPhotos = downloadProcessor.GetAllDownloadedPhotoNames();
             List<Photo> photoList = await stockService.SearchNewPhotosAsync(stockCategoryName, photoCount, downloadedPhotos);
@@ -84,9 +110,9 @@ namespace InstaBot.API
             foreach (var photo in photoList)
             {
                 string filePath = FileUtils.GetFullFilePath(downloadProcessor.Directory, photo.Id, ApiConstans.PHOTO_EXTENSION);
-                
+
                 await instaService.UploadPhotoAsync(filePath, photo.GetCaption());
-                
+
                 logger.Write(String.Format("{0}. uploaded. PhotoId : {1} ", uploadedPhoto, photo.Id));
                 uploadedPhoto++;
 
