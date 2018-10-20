@@ -8,11 +8,12 @@ namespace InstaBot.API.Utils
         private readonly List<int> numbers;
         private readonly Random random;
         private readonly int maxValue;
+
         public RandomGenerator(int maxValue)
         {
             this.maxValue = maxValue;
-             numbers = new List<int>();
-         random = new Random();
+            numbers = new List<int>();
+            random = new Random();
         }
 
         public int Different()

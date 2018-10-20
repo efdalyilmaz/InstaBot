@@ -44,15 +44,15 @@ namespace InstaBot.API
 
         public async Task MakeFollowRequestAsync(string userName, IFilter<UserInfo> filter = null)
         {
+            Random rnd = new Random();
             List<UserInfo> userInfoList = await instaService.GetUserFollowers(userName, 20);
             filter = filter ?? FollowerFilter.DefaultFilter();
 
             var filtered = filter.Apply(userInfoList);
-
             for (int i = 0; i < filtered.Count; i++)
             {
                 instaService.FollowUserAsync(filtered[i].Id);
-                await Task.Delay(ApiConstans.DELAY_TIME);
+                await Task.Delay(rnd.Next(ApiConstans.DELAY_TIME_MIN, ApiConstans.DELAY_TIME_MAX));
                 logger.Write($"Requested UserName : {filtered[i].UserName}, Remaining User {filtered.Count - i - 1}");
             }
 
@@ -89,15 +89,17 @@ namespace InstaBot.API
 
             requestList = requestList.Take(top).ToList();
 
+            Random rnd = new Random();
             for (int i = 0; i < requestList.Count; i++)
             {
-                instaService.FollowUserAsync(requestList[i].Id);
-                await Task.Delay(ApiConstans.DELAY_TIME);
+                await instaService.FollowUserAsync(requestList[i].Id);
+                //await Task.Delay(rnd.Next(ApiConstans.DELAY_TIME_MIN, ApiConstans.DELAY_TIME_MAX));
                 logger.Write($"Requested UserName : {requestList[i].UserName}, Remaining User {requestList.Count - i - 1}");
             }
 
             FileUtils.WriteAllToRequestedFile(requestList);
         }
+
 
         public async Task UploadPhotoAsync(string stockCategoryName, int photoCount, IDownloadProcessor downloadProcessor)
         {

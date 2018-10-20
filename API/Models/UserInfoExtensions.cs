@@ -18,6 +18,20 @@ namespace InstaBot.API.Models
             return userInfo;
         }
 
+        public static UserInfo ToUserInfo(this InstaCurrentUser instaCurrentUser)
+        {
+            UserInfo userInfo = new UserInfo
+            {
+                Id = instaCurrentUser.Pk,
+                UserName = instaCurrentUser.UserName,
+                FullName = instaCurrentUser.FullName,
+                IsPrivate = instaCurrentUser.IsPrivate,
+                HasProfilePicture = instaCurrentUser.ProfilePictureId != ApiConstans.UNKNOWN
+            };
+
+            return userInfo;
+        }
+
         public static UserInfo ToUserInfo(this InstaUser instaUser)
         {
             UserInfo userInfo = new UserInfo

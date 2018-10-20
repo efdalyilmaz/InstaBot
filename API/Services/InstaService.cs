@@ -61,6 +61,16 @@ namespace InstaBot.API.Services
             await instaApi.LikeMediaAsync(mediaId);
         }
 
+        public async Task<UserInfo> GetCurrentUserInfo()
+        {
+            validateInstaClient();
+            validateLoggedIn();
+
+            IResult<InstaCurrentUser> user = await instaApi.GetCurrentUserAsync();
+
+            return user.Value.ToUserInfo();
+        }
+
         public async Task<List<Media>> GetTagFeedAsync(string hashtag, int maxPageToLoad = 10)
         {
             IResult<InstaTagFeed> tagFeeds = await instaApi.GetTagFeedAsync(hashtag, PaginationParameters.MaxPagesToLoad(maxPageToLoad));

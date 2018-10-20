@@ -16,6 +16,8 @@ namespace InstaBot.API.Services
 
         Task LikeMediaAsync(string mediaId);
 
+        Task<UserInfo> GetCurrentUserInfo();
+
         Task<List<Media>> GetTagFeedAsync(string hashtag, int maxPageToLoad = 10);
 
         Task<List<UserInfo>> GetUserFollowers(string userName, int maxPageToLoad = 10);
