@@ -97,7 +97,7 @@ namespace InstaBot.API.Services
             return userShortList.Value.ToUserInfoList();
         }
 
-        public async Task<Info> FollowUserAsync(long userId)
+        public async Task FollowUserAsync(long userId)
         {
             validateInstaClient();
             validateLoggedIn();
@@ -106,10 +106,8 @@ namespace InstaBot.API.Services
             if (!friendshipStatus.Succeeded)
             {
                 logger.WriteAllProperties(friendshipStatus.Info);
-                return new Info(friendshipStatus.Succeeded, friendshipStatus.Info.Message);
+                throw new Exception(friendshipStatus.Info.Message, friendshipStatus.Info.Exception);
             }
-
-            return new Info();
         }
 
         public async Task UploadPhotoAsync(string fullpath, string caption)
