@@ -12,26 +12,44 @@ using System.Threading.Tasks;
 
 namespace InstaBot.API.Processors
 {
-    public class DownloadProcessor : IDownloadProcessor
+    public class DownloadService : IDownloadService
     {
         private readonly ILogger logger;
         public string Directory { get; private set; }
+        public string Category { get; private set; }
+        public string FullDirectory { get; private set; }
 
-        public DownloadProcessor(ILogger logger, string directory)
+
+        public DownloadService(ILogger logger, string directory, string category)
         {
             this.logger = logger;
             this.Directory = directory;
+            this.Category = category;
+            this.FullDirectory = FileUtils.GetFullDirectory(Directory, Category);
         }
 
         public List<string> GetAllDownloadedPhotoNames()
         {
             try
             {
-                DirectoryInfo d = new DirectoryInfo(Directory);
-                FileInfo[] files = d.GetFiles("*." + ApiConstans.PHOTO_EXTENSION);
+                string filePath = FileUtils.GetFullFilePath(Directory, ApiConstans.DOWNLOADS_FILE_NAME, ApiConstans.FILE_EXTENSION);
+                return FileUtils.ReadFile<string>(filePath);
+            }
+            catch (Exception ex)
+            {
+                logger.Write(ex.ToString());
+                throw;
+            }
+        }
 
-                return files.Select(f => Path.GetFileNameWithoutExtension(f.Name)).ToList<string>();
+        public void WriteDownloadedPhotoNames(List<Photo> list)
+        {
+            try
+            {
+                string filePath = FileUtils.GetFullFilePath(Directory, ApiConstans.DOWNLOADS_FILE_NAME, ApiConstans.FILE_EXTENSION);
+                List<string> names = list.Select(p => p.Id).ToList();
 
+                FileUtils.WriteAllListToFile<string>(filePath, names);
             }
             catch (Exception ex)
             {
@@ -53,7 +71,7 @@ namespace InstaBot.API.Processors
             using (WebClient client = new WebClient())
             {
                 string uri = photo.DownloadLink;
-                client.DownloadFileTaskAsync(new Uri(uri), FileUtils.GetFullFilePath(Directory, photo.Id, ApiConstans.PHOTO_EXTENSION));
+                client.DownloadFileTaskAsync(new Uri(uri), FileUtils.GetFullFilePath(FullDirectory, photo.Id, ApiConstans.PHOTO_EXTENSION));
             }
         }
 
@@ -62,7 +80,7 @@ namespace InstaBot.API.Processors
             using (WebClient client = new WebClient())
             {
                 string uri = photo.DownloadLink;
-                client.DownloadFile(new Uri(uri), FileUtils.GetFullFilePath(Directory, photo.Id, ApiConstans.PHOTO_EXTENSION));
+                client.DownloadFile(new Uri(uri), FileUtils.GetFullFilePath(FullDirectory, photo.Id, ApiConstans.PHOTO_EXTENSION));
             }
         }
 

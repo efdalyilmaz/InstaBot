@@ -110,18 +110,18 @@ namespace InstaBot.API
             }
         }
 
-        public async Task UploadPhotoAsync(string stockCategoryName, int photoCount, IDownloadProcessor downloadProcessor)
+        public async Task UploadPhotoAsync(string stockCategoryName, int photoCount, IDownloadService downloadService)
         {
-            List<string> downloadedPhotos = downloadProcessor.GetAllDownloadedPhotoNames();
+            List<string> downloadedPhotos = downloadService.GetAllDownloadedPhotoNames();
             List<Photo> photoList = await stockService.SearchNewPhotosAsync(stockCategoryName, photoCount, downloadedPhotos);
-            await downloadProcessor.DownloadAllPhotosAsync(photoList);
+            await downloadService.DownloadAllPhotosAsync(photoList);
+            downloadService.WriteDownloadedPhotoNames(photoList);
 
             int uploadedPhoto = 1;
             logger.Write(String.Format("Downloaded photo count {0}", photoList.Count));
             foreach (var photo in photoList)
             {
-                string filePath = FileUtils.GetFullFilePath(downloadProcessor.Directory, photo.Id, ApiConstans.PHOTO_EXTENSION);
-
+                string filePath = FileUtils.GetFullFilePath(downloadService.FullDirectory, photo.Id, ApiConstans.PHOTO_EXTENSION);
                 await instaService.UploadPhotoAsync(filePath, photo.GetCaption());
 
                 logger.Write(String.Format("{0}. uploaded. PhotoId : {1} ", uploadedPhoto, photo.Id));

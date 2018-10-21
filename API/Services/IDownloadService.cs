@@ -7,11 +7,17 @@ using System.Threading.Tasks;
 
 namespace InstaBot.API.Processors
 {
-    public interface IDownloadProcessor
+    public interface IDownloadService
     {
         string Directory { get; }
 
+        string Category { get; }
+
+        string FullDirectory { get; }
+
         List<string> GetAllDownloadedPhotoNames();
+
+        void WriteDownloadedPhotoNames(List<Photo> list);
 
         Task DownloadAllPhotosAsync(List<Photo> photoList);
 

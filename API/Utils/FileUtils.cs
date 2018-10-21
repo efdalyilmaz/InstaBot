@@ -61,6 +61,45 @@ namespace InstaBot.API.Utils
 
         }
 
+        public static List<string> GetDirectorysFileNames(string directory, string searchPattern = ApiConstans.PHOTO_EXTENSION_SEARCH_PATTERN)
+        {
+            DirectoryInfo d = new DirectoryInfo(directory);
+            FileInfo[] files = d.GetFiles(searchPattern, SearchOption.AllDirectories);
+
+            return files.Select(f => Path.GetFileNameWithoutExtension(f.Name)).ToList<string>();
+        }
+
+        public static void WriteAllListToFile<T>(string filePath, List<T> list)
+        {
+            using (StreamWriter w = new StreamWriter(filePath, true))
+            {
+                foreach (var item in list)
+                {
+                    w.WriteLine(item.ToString());
+                }
+            }
+        }
+
+        public static List<T> ReadFile<T>(string filePath)
+        {
+            List<T> list = new List<T>();
+            try
+            {
+                if (!File.Exists(filePath))
+                {
+                    return list;
+                }
+
+                string[] lines = File.ReadAllLines(filePath);
+                list = lines.Cast<T>().ToList();
+
+                return list;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
     }
 }
 
