@@ -89,17 +89,20 @@ namespace InstaBot.API
 
             requestList = requestList.Take(top).ToList();
 
-            Random rnd = new Random();
-            for (int i = 0; i < requestList.Count; i++)
+            int requestIndex = 0;
+            for (requestIndex = 0; requestIndex < requestList.Count; requestIndex++)
             {
-                await instaService.FollowUserAsync(requestList[i].Id);
-                //await Task.Delay(rnd.Next(ApiConstans.DELAY_TIME_MIN, ApiConstans.DELAY_TIME_MAX));
-                logger.Write($"Requested UserName : {requestList[i].UserName}, Remaining User {requestList.Count - i - 1}");
+                logger.Write($"Requested UserName : {requestList[requestIndex].UserName}, Remaining User {requestList.Count - requestIndex - 1}");
+
+                Info info = await instaService.FollowUserAsync(requestList[requestIndex].Id);
+                if (!info.Succeeded)
+                {
+                    break;
+                }
             }
 
-            FileUtils.WriteAllToRequestedFile(requestList);
+            FileUtils.WriteAllToRequestedFile(requestList.Take(requestIndex+1).ToList());
         }
-
 
         public async Task UploadPhotoAsync(string stockCategoryName, int photoCount, IDownloadProcessor downloadProcessor)
         {

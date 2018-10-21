@@ -49,7 +49,7 @@ namespace InstaBot.API.Models
             }
 
             string additionalLocationTags = locationTags.ToString().ToLower(System.Globalization.CultureInfo.CreateSpecificCulture("en-US"));
-            caption.Append($"#holiday #holidayfun #holidays #travel #travelphotography #travelholic #travelling #traveller #travels #travellers #trip #explore #discover {additionalLocationTags}");
+            caption.Append($"#holiday #holidayfun #holidays #travel #travelphotography #travelholic #travelling #traveller #travels #travellers #autumn #autumnleaves #trip #explore #discover {additionalLocationTags}");
 
             return caption.ToString();
         }

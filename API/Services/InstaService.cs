@@ -94,17 +94,22 @@ namespace InstaBot.API.Services
             validateLoggedIn();
 
             IResult<InstaUserShortList> userShortList = await instaApi.GetUserFollowingAsync(user.UserName, PaginationParameters.MaxPagesToLoad(maxPageToLoad));
-
-
             return userShortList.Value.ToUserInfoList();
         }
 
-        public async Task FollowUserAsync(long userId)
+        public async Task<Info> FollowUserAsync(long userId)
         {
             validateInstaClient();
             validateLoggedIn();
 
             IResult<InstaFriendshipStatus> friendshipStatus = await instaApi.FollowUserAsync(userId);
+            if (!friendshipStatus.Succeeded)
+            {
+                logger.WriteAllProperties(friendshipStatus.Info);
+                return new Info(friendshipStatus.Succeeded, friendshipStatus.Info.Message);
+            }
+
+            return new Info();
         }
 
         public async Task UploadPhotoAsync(string fullpath, string caption)

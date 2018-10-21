@@ -24,7 +24,7 @@ namespace InstaBot.API.Services
 
         Task<List<UserInfo>> GetCurrentUserFollowings(int maxPageToLoad = 10);
 
-        Task FollowUserAsync(long userId);
+        Task<Info> FollowUserAsync(long userId);
 
         Task UploadPhotoAsync(string fullpath, string caption);
         
