@@ -81,7 +81,7 @@ namespace InstaBot.API
                     requestList.AddRange(filtered);
                 }
 
-                if (requestList.Count > top)
+                if (requestList.Count >= top)
                 {
                     requestList = requestList.Take(top).ToList();
                     break;
@@ -97,13 +97,16 @@ namespace InstaBot.API
                     await Retry.DoAsync(() => instaService.FollowUserAsync(requestList[requestIndex].Id), TimeSpan.FromSeconds(3));
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Write(ex.ToString());
             }
             finally
             {
-                FileUtils.WriteAllToRequestedFile(requestList.Take(requestIndex).ToList());
+                if (requestIndex > 0)
+                {
+                    FileUtils.WriteAllToRequestedFile(requestList.Take(requestIndex).ToList());
+                }
             }
         }
 
